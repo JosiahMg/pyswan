@@ -36,7 +36,3 @@ Contributing
 
 If you have any questions along the way, feel free to ask them `here <https://github.com/JosiahMg/pyswan>`_.
 
-Support Pyswan
--------------
-
-`Open Collective <https://github.com/JosiahMg/pyswan/>`_ is an online funding platform that provides tools to raise money and share your finances with full transparency. It is the platform of choice for individuals and companies to make one-time or recurring donations directly to the project. If you are interested in making a financial contribution, please visit the `Pyswan collective <https://github.com/JosiahMg/pyswan>`_.
