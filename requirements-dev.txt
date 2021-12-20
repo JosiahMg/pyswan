@@ -1,0 +1,2 @@
+dateparser==1.*
+arrow==1.2.*

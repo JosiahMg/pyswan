@@ -1,4 +1,4 @@
-from .numeral import ExtractNumeral
+from pyswan.numeral import ExtractNumeral
 
 
 digitize = ExtractNumeral.digitize

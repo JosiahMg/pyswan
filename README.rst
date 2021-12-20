@@ -25,14 +25,3 @@ Example Usage
     '梁山108好汉'
 
 .. end-inclusion-marker-do-not-remove
-
-Documentation
--------------
-
-For full documentation, please visit `https://github.com/JosiahMg/pyswan`_.
-
-Contributing
-------------
-
-If you have any questions along the way, feel free to ask them `here <https://github.com/JosiahMg/pyswan>`_.
-
