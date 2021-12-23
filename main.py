@@ -1,6 +1,7 @@
+import datetime
+from pprint import pprint
+import arrow
 import pyswan
-from pprint import  pprint
 
-pprint(pyswan.digitize("梁山一百零八好汉"))
-print(pyswan.__version__)
 
+print(pyswan.parse('12点30'))

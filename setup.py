@@ -16,7 +16,7 @@ setup(
     long_description_content_type="text/x-rst",
     url="https://github.com/JosiahMg/pyswan",
     author="Josiah Meng",
-    author_email="josiahmg2018@gmail.com",
+    author_email="josiahmg@163.com",
     license="Apache 2.0",
     packages=["pyswan"],
     package_data={"pyswan": ["py.typed"]},
