@@ -1,4 +1,5 @@
 import regex as re
+from pyswan.constants import zh2arab_tab
 
 
 class ExtractNumeral:
@@ -15,12 +16,6 @@ class ExtractNumeral:
         :param target: 待转换的输入
         :return:
         '''
-
-        zh2arab_tab = {
-            '零': 0, '一': 1, '二': 2, '三': 3, '四': 4, '五': 5, '六': 6, '七': 7, '八': 8, '九': 9,
-            '〇': 0, '壹': 1, '贰': 2, '叁': 3, '肆': 4, '伍': 5, '陆': 6, '柒': 7, '捌': 8, '玖': 9,
-            '貮': 2, '两': 2, '日': 7, '末': 7, '天': 7
-        }
         # 处理普通的数字
         pattern = re.compile("[零一二两三四五六七八九]")
         match = pattern.finditer(target)
