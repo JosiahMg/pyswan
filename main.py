@@ -1,10 +1,10 @@
 import pyswan
 
 # 梁山108好汉！
-pyswan.digitize("梁山一百零八好汉！")
+print(pyswan.digitize("梁山一百零八好汉！"))
 
 # 今天是周7
-pyswan.digitize("今天是周日")
+print(pyswan.digitize("今天是周日"))
 
 # TODO
 pyswan.digitize("明天是劳动节")

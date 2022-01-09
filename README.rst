@@ -23,5 +23,9 @@ Example Usage
     >>> import pyswan
     >>> pyswan.digitize(u"梁山一百零八好汉")
     '梁山108好汉'
+    >>> pyswan.digitize("今天是周日")
+    '今天是周7'
+    >>> pyswan.parse('十二点三十分', dim=['time', 'number'])
+    "[{'type': 'time', 'body': '12点30分', 'value': '2022-01-09 12:30:56'}, {'type': 'number', 'start': 0, 'end': 2, 'value': '12'}, {'type': 'number', 'start': 3, 'end': 5, 'value': '30'}]"
 
 .. end-inclusion-marker-do-not-remove
