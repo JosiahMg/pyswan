@@ -1,8 +1,7 @@
-from pyswan.numeral import ExtractNumeral
-from pyswan.gen_time import GenDatetime
+from pyswan.parser import digitize
+from pyswan.parser import parse
 
-digitize = ExtractNumeral.digitize
-parse = GenDatetime().parse
+
 
 __all__ = [
     "digitize",

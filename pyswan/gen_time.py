@@ -13,13 +13,15 @@ from pyswan.normative import normative
 
 
 class ExtractDatetime:
-    def __init__(self, target):
+    def __init__(self, time_keyword):
         # 用于存放 年月日时分秒
         self.arrow_time = arrow.now()
         # 用于标记是否已经填充了年月日时分秒  0: 否   1: 是
         self.flag_datetime = [0, 0, 0, 0, 0, 0]
-        self.target = target
+        self.target = time_keyword
+        self.patterns = []
         self.generate_time()
+
 
     def __check_flag_datetime(self, params):
         """
@@ -65,6 +67,7 @@ class ExtractDatetime:
         match = pattern.search(self.target)
         if match is not None:
             tmp_target = match.group()
+            self.patterns.append({'pattern': pattern, 'match': tmp_target})
             tmp_parser = tmp_target.split("-")
             self.arrow_time = self.arrow_time.replace(year=int(tmp_parser[0]))
             self.arrow_time = self.arrow_time.replace(month=int(tmp_parser[1]))
@@ -77,6 +80,7 @@ class ExtractDatetime:
         match = pattern.search(self.target)
         if match is not None:
             tmp_target = match.group()
+            self.patterns.append({'pattern': pattern, 'match': tmp_target})
             tmp_parser = tmp_target.split("/")
             self.arrow_time = self.arrow_time.replace(year=int(tmp_parser[0]))
             self.arrow_time = self.arrow_time.replace(month=int(tmp_parser[1]))
@@ -89,6 +93,7 @@ class ExtractDatetime:
         match = pattern.search(self.target)
         if match is not None:
             tmp_target = match.group()
+            self.patterns.append({'pattern': pattern, 'match': tmp_target})
             tmp_parser = tmp_target.split(".")
             self.arrow_time = self.arrow_time.replace(year=int(tmp_parser[0]))
             self.arrow_time = self.arrow_time.replace(month=int(tmp_parser[1]))
@@ -105,6 +110,7 @@ class ExtractDatetime:
         match = pattern.search(self.target)
         if match is not None:
             match_str = match.group()
+            self.patterns.append({'pattern': pattern, 'match': match_str})
             p = re.compile(r"(月|\.|-)")
             m = p.search(match_str)
             if match is not None:
@@ -148,6 +154,7 @@ class ExtractDatetime:
             pattern = re.compile(rule)
             match = pattern.search(self.target)
             if match is not None:
+                self.patterns.append({'pattern': pattern, 'match': match.group()})
                 self.arrow_time = self.arrow_time.shift(**value['arrow_params'])
                 self.__set_flag_datetime(value['flag_params'])
 
@@ -162,6 +169,7 @@ class ExtractDatetime:
         pattern = re.compile(rule)
         match = pattern.search(self.target)
         if match is not None:
+            self.patterns.append({'pattern': pattern, 'match': match.group()})
             self.arrow_time.replace(year=int(match.group()))
             self.__set_flag_datetime('year')
 
@@ -175,6 +183,7 @@ class ExtractDatetime:
         pattern = re.compile(rule)
         match = pattern.search(self.target)
         if match is not None:
+            self.patterns.append({'pattern': pattern, 'match': match.group()})
             self.arrow_time = self.arrow_time.replace(month=int(match.group()))
             self.__set_flag_datetime('month')
 
@@ -188,6 +197,7 @@ class ExtractDatetime:
         pattern = re.compile(rule)
         match = pattern.search(self.target)
         if match is not None:
+            self.patterns.append({'pattern': pattern, 'match': match.group()})
             self.arrow_time = self.arrow_time.replace(day=int(match.group()))
             self.__set_flag_datetime('day')
 
@@ -202,6 +212,7 @@ class ExtractDatetime:
         pattern = re.compile(rule)
         match = pattern.search(self.target)
         if match is not None:
+            self.patterns.append({'pattern': pattern, 'match': match.group()})
             rule = '([0-2]?[0-9]):[0-5]?[0-9]:[0-5]?[0-9]'
             pattern = re.compile(rule)
             match = pattern.search(self.target)
@@ -218,6 +229,7 @@ class ExtractDatetime:
             pattern = re.compile(rule)
             match = pattern.search(self.target)
             if match is not None:
+                self.patterns.append({'pattern': pattern, 'match': match.group()})
                 rule = '([0-2]?[0-9]):[0-5]?[0-9]'
                 pattern = re.compile(rule)
                 match = pattern.search(self.target)
@@ -238,6 +250,7 @@ class ExtractDatetime:
         match = pattern.search(self.target)
         if match is not None:
             tmp_target = match.group()
+            self.patterns.append({'pattern': pattern, 'match': tmp_target})
             tmp_parser = tmp_target.split(":")
             self.arrow_time = self.arrow_time.replace(hour=int(tmp_parser[0]))
             self.arrow_time = self.arrow_time.replace(minute=int(tmp_parser[1]))
@@ -249,6 +262,7 @@ class ExtractDatetime:
             match = pattern.search(self.target)
             if match is not None:
                 tmp_target = match.group()
+                self.patterns.append({'pattern': pattern, 'match': tmp_target})
                 tmp_parser = tmp_target.split(":")
                 self.arrow_time = self.arrow_time.replace(hour=int(tmp_parser[0]))
                 self.arrow_time = self.arrow_time.replace(minute=int(tmp_parser[1]))
@@ -266,6 +280,7 @@ class ExtractDatetime:
         pattern = re.compile(rule)
         match = pattern.search(self.target)
         if match is not None:
+            self.patterns.append({'pattern': pattern, 'match': match.group()})
             self.arrow_time = self.arrow_time.replace(hour=int(match.group()))
             self.__set_flag_datetime('hour')
 
@@ -274,6 +289,7 @@ class ExtractDatetime:
         pattern = re.compile(rule)
         match = pattern.search(self.target)
         if match is not None:
+            self.patterns.append({'pattern': pattern, 'match': match.group()})
             self.arrow_time = self.arrow_time.replace(hour=int(match.group()))
             self.__set_flag_datetime('hour')
 
@@ -285,6 +301,7 @@ class ExtractDatetime:
         pattern = re.compile(rule)
         match = pattern.search(self.target)
         if match is not None:
+            self.patterns.append({'pattern': pattern, 'match': match.group()})
             self.arrow_time = self.arrow_time.replace(minute=int(match.group()))
             self.__set_flag_datetime('minute')
 
@@ -293,6 +310,7 @@ class ExtractDatetime:
         pattern = re.compile(rule)
         match = pattern.search(self.target)
         if match is not None:
+            self.patterns.append({'pattern': pattern, 'match': match.group()})
             self.arrow_time = self.arrow_time.replace(minute=15)
             self.__set_flag_datetime('minute')
 
@@ -301,6 +319,7 @@ class ExtractDatetime:
         pattern = re.compile(rule)
         match = pattern.search(self.target)
         if match is not None:
+            self.patterns.append({'pattern': pattern, 'match': match.group()})
             self.arrow_time = self.arrow_time.replace(minute=30)
             self.__set_flag_datetime('minute')
 
@@ -309,6 +328,7 @@ class ExtractDatetime:
         pattern = re.compile(rule)
         match = pattern.search(self.target)
         if match is not None:
+            self.patterns.append({'pattern': pattern, 'match': match.group()})
             self.arrow_time = self.arrow_time.replace(minute=45)
             self.__set_flag_datetime('minute')
 
@@ -319,6 +339,7 @@ class ExtractDatetime:
         pattern = re.compile(rule)
         match = pattern.search(self.target)
         if match is not None:
+            self.patterns.append({'pattern': pattern, 'match': match.group()})
             self.arrow_time = self.arrow_time.replace(second=int(match.group()))
             self.__set_flag_datetime('second')
 
@@ -365,6 +386,9 @@ class ExtractDatetime:
 
         return self.arrow_time.format('YYYY-MM-DD HH:mm:ss')
 
+    def get_patterns(self):
+        return self.patterns
+
 
 class GenDatetime:
     def __init__(self):
@@ -386,36 +410,48 @@ class GenDatetime:
                 pattern = pickle.load(f)
         return pattern
 
-    def extract_datetime_keywords(self, target):
+    def extract_datetime_keywords(self, message):
         startline = -1
         endline = -1
         nums = 0
-        dt_keywords = []
-        match = self.pattern.finditer(target)
+        time_keywords = []
+        match = self.pattern.finditer(message.target)
         for m in match:
+            message.insert(start=m.start(), end=m.end(), body=m.group(), value=None, pattern=self.pattern)
             startline = m.start()
             if startline == endline:
                 nums -= 1
-                dt_keywords[nums] = dt_keywords[nums] + m.group()
+                time_keywords[nums] = time_keywords[nums] + m.group()
             else:
-                dt_keywords.append(m.group())
+                time_keywords.append(m.group())
             endline = m.end()
             nums += 1
-        return dt_keywords
+        message.time_keywords = time_keywords
+        return message
 
-    def parse(self, target):
-        # 中文数字 -> 阿拉伯数字
-        num_target = ExtractNumeral.digitize(target)
+    def parse(self, message):
+        # # 中文数字 -> 阿拉伯数字
+        # num_target = ExtractNumeral.digitize(target)
         # 去除句子中的空格 tab 多义词归一化
-        norm_target = normative(num_target)
+        norm_target = normative(message)
         # 提取时间相关的关键字
-        dt_kws = self.extract_datetime_keywords(norm_target)
-        res = {}
+        message_time_kws = self.extract_datetime_keywords(norm_target)
+        dt_kws = message_time_kws.time_keywords
         if len(dt_kws):
             for dt_kw in dt_kws:
-                res[dt_kw] = ExtractDatetime(dt_kw).generate_time()
-        return res
+                ele = {}
+                ele['type'] = 'time'
+                ele['body'] = dt_kw
+                extrator = ExtractDatetime(dt_kw)
+                ele['value'] = extrator.generate_time()
+                ele['pattern'] = extrator.get_patterns()
+                message_time_kws.extracts.append(ele)
+        return message_time_kws
 
 
 if __name__ == '__main__':
-    print(GenDatetime().parse('现在是12月13日12点50分'))
+    from pyswan.message import Message
+
+    message = Message('现在是十二月13日12点50分')
+    res_mess = GenDatetime().parse(message)
+    print(res_mess.get_extracts(filter=['pattern']))
