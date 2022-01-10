@@ -27,5 +27,6 @@ Example Usage
     '今天是周7'
     >>> pyswan.parse('十二点三十分', dim=['time', 'number'])
     "[{'type': 'time', 'body': '12点30分', 'value': '2022-01-09 12:30:56'}, {'type': 'number', 'start': 0, 'end': 2, 'value': '12'}, {'type': 'number', 'start': 3, 'end': 5, 'value': '30'}]"
-
+    >>> pyswan.parse('六加十三除以2再乘八等于多少', dim=['equation'])
+    "[{'type': 'equation', 'start': 0, 'end': 8, 'value': '6+13/2*8'}]"
 .. end-inclusion-marker-do-not-remove

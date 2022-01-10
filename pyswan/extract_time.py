@@ -22,7 +22,6 @@ class ExtractDatetime:
         self.patterns = []
         self.generate_time()
 
-
     def __check_flag_datetime(self, params):
         """
         如果self.flag_datetime对应的参数全部为1 则返回 true 否则返回 false
