@@ -11,7 +11,7 @@ exec(version, about)
 setup(
     name="pyswan",
     version=about["__version__"],
-    description="Better dates & times & numbers for Python of Chinese",
+    description="Better dates, times, math expression and place extractor for Python of Chinese",
     long_description=readme,
     long_description_content_type="text/x-rst",
     url="https://github.com/JosiahMg/pyswan",

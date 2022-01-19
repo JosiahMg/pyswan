@@ -1,7 +1,9 @@
 from ._version import __version__
-from .api import digitize, parse
+from .parser import digitize
+from .parser import parse
+
 __all__ = [
     "__version__",
     "digitize",
-    "parse"
+    "parse",
 ]

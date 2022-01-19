@@ -2,6 +2,7 @@ from pyswan.numeral import ExtractNumeral
 from pyswan.extract_time import GenDatetime
 from pyswan.extract_number import GenNumber
 from pyswan.extract_math_equation import GenMathEquation
+from pyswan.extract_cpca import GenPlace
 
 
 def digitize(target):
@@ -14,7 +15,7 @@ def parse(target, dim):
     :param dim:
     :return:
     """
-    supported = ['time', 'number', 'equation']
+    supported = ['time', 'number', 'equation', 'place']
     to_support = ['temperature', 'ordinal', 'distance', 'volume', 'amount-of-money', 'duration', 'email', 'url', 'phone-number']
     if not isinstance(dim, list):
         print('dim must be of type list')
@@ -35,6 +36,8 @@ def parse(target, dim):
             message = GenNumber().parse(message)
         if d == 'equation':
             message = GenMathEquation().parse(message)
+        if d == 'place':
+            message = GenPlace().parse(message)
 
     res = message.get_extracts(filter=['pattern'])
     return res
@@ -44,8 +47,8 @@ if __name__ == '__main__':
     from pprint import pprint
 
     pprint(digitize('梁山一百零八好汉'))
-    pprint(parse('现在是十二月13日12点50分', dim=['time', 'number', 'equation']))
+    pprint(parse('现在是十二月13日12点50分', dim=['time', 'number']))
     pprint(parse('六加十三除以2再乘八等于多少', dim=['equation']))
-
+    pprint(parse('武汉的车牌号是多少？', dim=['place']))
 
 

@@ -3,3 +3,6 @@ __pycache__/
 build/
 dist/
 pyswan.egg-info/
+pyswan/__pycache__
+pyswan/cpca/__pycache__
+pyswan/cpca/resources/__pycache__
