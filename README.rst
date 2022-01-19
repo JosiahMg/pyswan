@@ -1,5 +1,5 @@
 Pyswan: Better dates, times, math expression and place extractor for Python of Chinese
-==================================================
+======================================================================================
 **Pyswan** is a Python library that offers a sensible and human-friendly approach to creating, manipulating, formatting and converting dates, times and timestamps. It implements and updates the datetime type, plugging gaps in functionality and providing an intelligent module API that supports many common creation scenarios. Simply put, it helps you work with dates and times with fewer imports and a lot less code.
 
 
