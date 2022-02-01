@@ -22,7 +22,8 @@ class ExtractNumeral:
         match = pattern.finditer(message.target)
         for m in match:
             value = str(zh2arab_tab.get(m.group()))
-            message.insert(start=m.start(), end=m.end(), body=m.group(), value=value, pattern=pattern)
+            message.insert(start=m.start(), end=m.end(),
+                           body=m.group(), value=value, pattern=pattern)
             message.target = pattern.sub(value, message.target, 1)
 
         # 处理周末 周日 周天
@@ -30,7 +31,8 @@ class ExtractNumeral:
         match = pattern.finditer(message.target)
         for m in match:
             value = str(zh2arab_tab.get(m.group()))
-            message.insert(start=m.span()[0], end=m.end(), body=m.group(), value=value, pattern=pattern)
+            message.insert(start=m.span()[0], end=m.end(
+            ), body=m.group(), value=value, pattern=pattern)
             message.target = pattern.sub(value, message.target, 1)
 
         return message
@@ -51,7 +53,8 @@ class ExtractNumeral:
             num = 0
             if len(s) == 2:
                 num += int(s[0]) * 100 + int(s[1]) * 10
-            message.insert(start=m.span()[0], end=m.end(), body=m.group(), value=str(num), pattern=pattern)
+            message.insert(start=m.span()[0], end=m.end(
+            ), body=m.group(), value=str(num), pattern=pattern)
             message.target = pattern.sub(str(num), message.target, 1)
 
         return message
@@ -72,7 +75,8 @@ class ExtractNumeral:
             num = 0
             if len(s) == 2:
                 num += int(s[0]) * 1000 + int(s[1]) * 100
-            message.insert(start=m.start(), end=m.end(), body=m.group(), value=str(num), pattern=pattern)
+            message.insert(start=m.start(), end=m.end(),
+                           body=m.group(), value=str(num), pattern=pattern)
             message.target = pattern.sub(str(num), message.target, 1)
 
         return message
@@ -88,7 +92,8 @@ class ExtractNumeral:
             num = 0
             if len(s) == 2:
                 num += int(s[0]) * 10000 + int(s[1]) * 1000
-            message.insert(start=m.start(), end=m.end(), body=m.group(), value=str(num), pattern=pattern)
+            message.insert(start=m.start(), end=m.end(),
+                           body=m.group(), value=str(num), pattern=pattern)
             message.target = pattern.sub(str(num), message.target, 1)
 
         return message
@@ -113,7 +118,8 @@ class ExtractNumeral:
                 num += int(s[0])*10
             if s[1]:
                 num += int(s[1])
-            message.insert(start=m.start(), end=m.end(), body=m.group(), value=str(num), pattern=pattern)
+            message.insert(start=m.start(), end=m.end(),
+                           body=m.group(), value=str(num), pattern=pattern)
             message.target = pattern.sub(str(num), message.target, 1)
 
         return message
@@ -140,7 +146,8 @@ class ExtractNumeral:
                 hundred = int(s[0])
                 num += hundred * 100
                 num += int(s[1])
-            message.insert(start=m.start(), end=m.end(), body=m.group(), value=str(num), pattern=pattern)
+            message.insert(start=m.start(), end=m.end(),
+                           body=m.group(), value=str(num), pattern=pattern)
             message.target = pattern.sub(str(num), message.target, 1)
 
         return message
@@ -161,7 +168,8 @@ class ExtractNumeral:
                 thousand = int(s[0])
                 num += thousand * 1000
                 num += int(s[1])
-            message.insert(start=m.start(), end=m.end(), body=m.group(), value=str(num), pattern=pattern)
+            message.insert(start=m.start(), end=m.end(),
+                           body=m.group(), value=str(num), pattern=pattern)
             message.target = pattern.sub(str(num), message.target, 1)
         return message
 
@@ -186,7 +194,8 @@ class ExtractNumeral:
                 tenthousand = int(s[0])
                 num += tenthousand * 10000
                 num += int(s[1])
-            message.insert(start=m.start(), end=m.end(), body=m.group(), value=str(num), pattern=pattern)
+            message.insert(start=m.start(), end=m.end(),
+                           body=m.group(), value=str(num), pattern=pattern)
             message.target = pattern.sub(str(num), message.target, 1)
         return message
 

@@ -16,14 +16,14 @@ def parse(target, dim):
     :return:
     """
     supported = ['time', 'number', 'equation', 'place']
-    to_support = ['temperature', 'ordinal', 'distance', 'volume', 'amount-of-money', 'duration', 'email', 'url', 'phone-number']
+    to_support = ['temperature', 'ordinal', 'distance', 'volume',
+                  'amount-of-money', 'duration', 'email', 'url', 'phone-number']
     if not isinstance(dim, list):
         print('dim must be of type list')
         return []
 
     if len(dim) == 0:
         return []
-
 
     # 数字化处理 中文数字 -> 阿拉伯数字
     message = ExtractNumeral.digitize(target)
@@ -49,6 +49,4 @@ if __name__ == '__main__':
     pprint(digitize('梁山一百零八好汉'))
     pprint(parse('现在是十二月13日12点50分', dim=['time', 'number']))
     pprint(parse('六加十三除以2再乘八等于多少', dim=['equation']))
-    pprint(parse('武汉的车牌号是多少？', dim=['place']))
-
-
+    pprint(parse('徐汇区虹漕路461号五十八号楼五楼', dim=['place']))

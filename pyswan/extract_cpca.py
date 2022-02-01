@@ -17,5 +17,6 @@ class GenPlace:
             ele['city'] = df_message.loc[d]['city']
             ele['area'] = df_message.loc[d]['area']
             ele['code'] = df_message.loc[d]['adcode']
+            ele['address'] = df_message.loc[d]['address']
             message.extracts.append(ele)
         return message
