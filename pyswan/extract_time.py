@@ -22,7 +22,7 @@ class ExtractDatetime:
         self.patterns = []
         self.generate_time()
 
-    def __check_flag_datetime(self, params):
+    def _check_flag_any_datetime(self, params):
         """
         如果self.flag_datetime对应的参数全部为1 则返回 true 否则返回 false
         :param params:
@@ -39,7 +39,20 @@ class ExtractDatetime:
 
         return True
 
-    def __set_flag_datetime(self, params):
+    @property
+    def check_flag(self):
+        """
+        如果self.flag_datetime对应的参数全部为0 则返回 false 否则返回 true
+        :param params:
+        :return:
+        """
+        lookups = {"year": 0, "month": 1, "day": 2, "hour": 3, "minute": 4, "second": 5}
+        for value in lookups.values():
+            if self.flag_datetime[value] == 1:
+                return True
+        return False
+
+    def _set_flag_datetime(self, params):
         '''
         用于设置 self.flag_datetime 的值
         :param params:
@@ -52,12 +65,12 @@ class ExtractDatetime:
         else:
             self.flag_datetime[lookups[params]] = 1
 
-    def __gen_ymd_fixed_time(self):
+    def _gen_ymd_fixed_time(self):
         """
         处理是给定的规定的年月日
         如: 2021-2-13  2021.2.13  2021/2/13
         """
-        if self.__check_flag_datetime(['year', 'month', 'day']):
+        if self._check_flag_any_datetime(['year', 'month', 'day']):
             return
 
         # 2021-12-21
@@ -71,7 +84,7 @@ class ExtractDatetime:
             self.arrow_time = self.arrow_time.replace(year=int(tmp_parser[0]))
             self.arrow_time = self.arrow_time.replace(month=int(tmp_parser[1]))
             self.arrow_time = self.arrow_time.replace(day=int(tmp_parser[2]))
-            self.__set_flag_datetime(['year', 'month', 'day'])
+            self._set_flag_datetime(['year', 'month', 'day'])
 
         # 2021/12/21
         rule = r"(?<!\d)[0-9]?[0-9]?[0-9]{2}/(10|11|12|[1-9])/([0-3][0-9]|[1-9])(?!\d)"
@@ -84,7 +97,7 @@ class ExtractDatetime:
             self.arrow_time = self.arrow_time.replace(year=int(tmp_parser[0]))
             self.arrow_time = self.arrow_time.replace(month=int(tmp_parser[1]))
             self.arrow_time = self.arrow_time.replace(day=int(tmp_parser[2]))
-            self.__set_flag_datetime(['year', 'month', 'day'])
+            self._set_flag_datetime(['year', 'month', 'day'])
 
         # 2021.12.21
         rule = r"(?<!\d)[0-9]?[0-9]?[0-9]{2}\.(10|11|12|[1-9])\.([0-3][0-9]|[1-9])(?!\d)"
@@ -97,11 +110,11 @@ class ExtractDatetime:
             self.arrow_time = self.arrow_time.replace(year=int(tmp_parser[0]))
             self.arrow_time = self.arrow_time.replace(month=int(tmp_parser[1]))
             self.arrow_time = self.arrow_time.replace(day=int(tmp_parser[2]))
-            self.__set_flag_datetime(['year', 'month', 'day'])
+            self._set_flag_datetime(['year', 'month', 'day'])
 
-    def __gen_md_fixed_time(self):
+    def _gen_md_fixed_time(self):
 
-        if self.__check_flag_datetime(['month', 'day']):
+        if self._check_flag_any_datetime(['month', 'day']):
             return
         # 处理缺少日字的 如: 3月2
         rule = r"(?<!\d)(10|11|12|[1-9])(月|\.|-)([0-3][0-9]|[1-9])(?![\d日])"
@@ -118,15 +131,15 @@ class ExtractDatetime:
                 day = match_str[split_index + 1:]
                 self.arrow_time = self.arrow_time.replace(month=int(month))
                 self.arrow_time = self.arrow_time.replace(day=int(day))
-                self.__set_flag_datetime(['month', 'day'])
+                self._set_flag_datetime(['month', 'day'])
 
-    def __gen_ymd_relative_time(self):
+    def _gen_ymd_relative_time(self):
         """
         处理是给定可以确定的相对日子
         :param target:
         :return:
         """
-        if self.__check_flag_datetime(['year', 'month', 'day']):
+        if self._check_flag_any_datetime(['year', 'month', 'day']):
             return
 
         relative_dt = {
@@ -146,6 +159,7 @@ class ExtractDatetime:
             r'前天': {"arrow_params": {"days": -2}, "flag_params": ["year", "month", "day"]},
             r'昨天': {"arrow_params": {"days": -1}, "flag_params": ["year", "month", "day"]},
             r'今天': {"arrow_params": {"days": 0}, "flag_params": ["year", "month", "day"]},
+            r'现在': {"arrow_params": {"days": 0}, "flag_params": ["year", "month", "day", "hour", "second", "minute"]},
             r'明天': {"arrow_params": {"days": +1}, "flag_params": ["year", "month", "day"]},
             r'后天': {"arrow_params": {"days": +2}, "flag_params": ["year", "month", "day"]},
             r'大后天': {"arrow_params": {"days": +3}, "flag_params": ["year", "month", "day"]},
@@ -161,14 +175,14 @@ class ExtractDatetime:
             if match is not None:
                 self.patterns.append({'pattern': pattern, 'match': match.group()})
                 self.arrow_time = self.arrow_time.shift(**value['arrow_params'])
-                self.__set_flag_datetime(value['flag_params'])
+                self._set_flag_datetime(value['flag_params'])
 
-    def __gen_ymd_fixed_relative_time(self):
+    def _gen_ymd_fixed_relative_time(self):
         """
         处理非固定的时间, 如 两年前  五年前  三天后  两小时之后  三分钟之后   50秒之后 etc
         :return: 
         """
-        if self.__check_flag_datetime(["year", "month", "day", "hour", "minute", "second"]):
+        if self._check_flag_any_datetime(["year", "month", "day", "hour", "minute", "second"]):
             return
         # -------------------- 秒 ------------------------
         pattern = re.compile(r'\d+(?=秒钟?(以前|前|之前))')
@@ -176,18 +190,18 @@ class ExtractDatetime:
         if match is not None:
             self.patterns.append({'pattern': pattern, 'match': match.group()})
             self.arrow_time = self.arrow_time.shift(seconds=-int(match.group()))
-            self.__set_flag_datetime(["year", "month", "day", "hour", "minute", "second"])
+            self._set_flag_datetime(["year", "month", "day", "hour", "minute", "second"])
 
-        if self.__check_flag_datetime(["year", "month", "day", "hour", "minute", "second"]):
+        if self._check_flag_any_datetime(["year", "month", "day", "hour", "minute", "second"]):
             return
         pattern = re.compile(r'\d+(?=秒钟?(以后|后|之后|过后))')
         match = pattern.search(self.target)
         if match is not None:
             self.patterns.append({'pattern': pattern, 'match': match.group()})
             self.arrow_time = self.arrow_time.shift(seconds=int(match.group()))
-            self.__set_flag_datetime(["year", "month", "day", "hour", "minute", "second"])
+            self._set_flag_datetime(["year", "month", "day", "hour", "minute", "second"])
 
-        if self.__check_flag_datetime(["year", "month", "day", "hour", "minute", "second"]):
+        if self._check_flag_any_datetime(["year", "month", "day", "hour", "minute", "second"]):
             return
         # -------------------- 分 ------------------------
         pattern = re.compile(r'\d+(?=分钟(以前|前|之前))')
@@ -195,18 +209,18 @@ class ExtractDatetime:
         if match is not None:
             self.patterns.append({'pattern': pattern, 'match': match.group()})
             self.arrow_time = self.arrow_time.shift(minutes=-int(match.group()))
-            self.__set_flag_datetime(["year", "month", "day", "hour", "minute", "second"])
+            self._set_flag_datetime(["year", "month", "day", "hour", "minute", "second"])
 
-        if self.__check_flag_datetime(["year", "month", "day", "hour", "minute", "second"]):
+        if self._check_flag_any_datetime(["year", "month", "day", "hour", "minute", "second"]):
             return
         pattern = re.compile(r'\d+(?=分钟(以后|后|之后|过后))')
         match = pattern.search(self.target)
         if match is not None:
             self.patterns.append({'pattern': pattern, 'match': match.group()})
             self.arrow_time = self.arrow_time.shift(minutes=int(match.group()))
-            self.__set_flag_datetime(["year", "month", "day", "hour", "minute", "second"])
+            self._set_flag_datetime(["year", "month", "day", "hour", "minute", "second"])
 
-        if self.__check_flag_datetime(["year", "month", "day", "hour", "minute"]):
+        if self._check_flag_any_datetime(["year", "month", "day", "hour", "minute"]):
             return
         # -------------------- 时 ------------------------
         pattern = re.compile(r'\d+(?=个?小时(以前|前|之前))')
@@ -214,94 +228,105 @@ class ExtractDatetime:
         if match is not None:
             self.patterns.append({'pattern': pattern, 'match': match.group()})
             self.arrow_time = self.arrow_time.shift(hours=-int(match.group()))
-            self.__set_flag_datetime(["year", "month", "day", 'hour', "minute"])
+            self._set_flag_datetime(["year", "month", "day", 'hour', "minute"])
 
-        if self.__check_flag_datetime(["year", "month", "day", "hour", "minute"]):
+        if self._check_flag_any_datetime(["year", "month", "day", "hour", "minute"]):
             return
         pattern = re.compile(r'\d+(?=个?小时(以后|后|之后|过后))')
         match = pattern.search(self.target)
         if match is not None:
             self.patterns.append({'pattern': pattern, 'match': match.group()})
             self.arrow_time = self.arrow_time.shift(hours=int(match.group()))
-            self.__set_flag_datetime(["year", "month", "day", 'hour', "minute"])
+            self._set_flag_datetime(["year", "month", "day", 'hour', "minute"])
 
         # -------------------- 天 ------------------------
-        if self.__check_flag_datetime(["year", "month", "day"]):
+        if self._check_flag_any_datetime(["year", "month", "day"]):
             return
         pattern = re.compile(r'\d+(?=天(以后|后|之后|过后))')
         match = pattern.search(self.target)
         if match is not None:
             self.patterns.append({'pattern': pattern, 'match': match.group()})
             self.arrow_time = self.arrow_time.shift(days=int(match.group()))
-            self.__set_flag_datetime(["year", "month", "day"])
+            self._set_flag_datetime(["year", "month", "day"])
 
-        if self.__check_flag_datetime(["year", "month", "day"]):
+        if self._check_flag_any_datetime(["year", "month", "day"]):
             return
         pattern = re.compile(r'\d+(?=天(以前|前|之前))')
         match = pattern.search(self.target)
         if match is not None:
             self.patterns.append({'pattern': pattern, 'match': match.group()})
             self.arrow_time = self.arrow_time.shift(days=-int(match.group()))
-            self.__set_flag_datetime(["year", "month", "day"])
+            self._set_flag_datetime(["year", "month", "day"])
 
         # -------------------- 月 ------------------------
-        if self.__check_flag_datetime(["year", "month", "day"]):
+        if self._check_flag_any_datetime(["year", "month", "day"]):
             return
         pattern = re.compile(r'\d+(?=个月(以后|后|之后|过后))')
         match = pattern.search(self.target)
         if match is not None:
             self.patterns.append({'pattern': pattern, 'match': match.group()})
             self.arrow_time = self.arrow_time.shift(months=int(match.group()))
-            self.__set_flag_datetime(["year", "month", "day"])
+            self._set_flag_datetime(["year", "month", "day"])
 
-        if self.__check_flag_datetime(["year", "month", "day"]):
+        if self._check_flag_any_datetime(["year", "month", "day"]):
             return
         pattern = re.compile(r'\d+(?=个月(以前|前|之前))')
         match = pattern.search(self.target)
         if match is not None:
             self.patterns.append({'pattern': pattern, 'match': match.group()})
             self.arrow_time = self.arrow_time.shift(months=-int(match.group()))
-            self.__set_flag_datetime(["year", "month", "day"])
+            self._set_flag_datetime(["year", "month", "day"])
 
         # -------------------- 年 ------------------------
-        if self.__check_flag_datetime(["year", "month", "day"]):
+        if self._check_flag_any_datetime(["year", "month", "day"]):
             return
         pattern = re.compile(r'\d+(?=年(以后|后|之后|过后))')
         match = pattern.search(self.target)
         if match is not None:
             self.patterns.append({'pattern': pattern, 'match': match.group()})
             self.arrow_time = self.arrow_time.shift(years=int(match.group()))
-            self.__set_flag_datetime(["year", "month", "day"])
+            self._set_flag_datetime(["year", "month", "day"])
 
-        if self.__check_flag_datetime(["year", "month", "day"]):
+        if self._check_flag_any_datetime(["year", "month", "day"]):
             return
         pattern = re.compile(r'\d+(?=年(以前|前|之前))')
         match = pattern.search(self.target)
         if match is not None:
             self.patterns.append({'pattern': pattern, 'match': match.group()})
             self.arrow_time = self.arrow_time.shift(years=-int(match.group()))
-            self.__set_flag_datetime(["year", "month", "day"])
+            self._set_flag_datetime(["year", "month", "day"])
 
-    def __gen_year_fixed_time(self):
+    def _gen_year_fixed_time(self):
         """
         处理固定的年如: 2012年  1000年 etc.
         """
-        if self.__check_flag_datetime('year'):
+        if self._check_flag_any_datetime('year'):
             return
 
-        rule = r"\d+(?=年)"
+        rule = r"\d+(?=年(?!代))"
         pattern = re.compile(rule)
         match = pattern.search(self.target)
         if match is not None:
             self.patterns.append({'pattern': pattern, 'match': match.group()})
-            self.arrow_time.replace(year=int(match.group()))
-            self.__set_flag_datetime('year')
+            self.arrow_time = self.arrow_time.replace(year=int(match.group()))
+            self._set_flag_datetime('year')
 
-    def __gen_month_fixed_time(self):
+    def _gen_year_by_epoch(self):
+        if self._check_flag_any_datetime('year'):
+            return
+        rule = r'[2-9]0(?=年代)'
+        pattern = re.compile(rule)
+        match = pattern.search(self.target)
+        if match is not None:
+            self.patterns.append({'pattern': pattern, 'match': match.group()})
+            self.arrow_time = self.arrow_time.replace(year=1900+int(match.group()))
+            self._set_flag_datetime('year')
+
+    def _gen_month_fixed_time(self):
         """
         处理固定的月如: 12月 1月 etc.
         """
-        if self.__check_flag_datetime('month'):
+        if self._check_flag_any_datetime('month'):
             return
         rule = r"(10|11|12|[1-9])(?=月)"
         pattern = re.compile(rule)
@@ -309,13 +334,46 @@ class ExtractDatetime:
         if match is not None:
             self.patterns.append({'pattern': pattern, 'match': match.group()})
             self.arrow_time = self.arrow_time.replace(month=int(match.group()))
-            self.__set_flag_datetime('month')
+            self._set_flag_datetime('month')
 
-    def __gen_day_fixed_time(self):
+    def _gen_month_by_season(self):
+        if self._check_flag_any_datetime('month'):
+            return
+        rule_spring = r'春天|春季'
+        pattern = re.compile(rule_spring)
+        match = pattern.search(self.target)
+        if match is not None:
+            self.patterns.append({'pattern': pattern, 'match': match.group()})
+            self.arrow_time = self.arrow_time.replace(month=3)
+            self._set_flag_datetime('month')
+        rule_summer = r"夏天|夏季"
+        pattern = re.compile(rule_summer)
+        match = pattern.search(self.target)
+        if match is not None:
+            self.patterns.append({'pattern': pattern, 'match': match.group()})
+            self.arrow_time = self.arrow_time.replace(month=6)
+            self._set_flag_datetime('month')
+        rule_autumn = r"秋天|秋季"
+        pattern = re.compile(rule_autumn)
+        match = pattern.search(self.target)
+        if match is not None:
+            self.patterns.append({'pattern': pattern, 'match': match.group()})
+            self.arrow_time = self.arrow_time.replace(month=9)
+            self._set_flag_datetime('month')
+        rule_winter = r"冬天|冬季"
+        pattern = re.compile(rule_winter)
+        match = pattern.search(self.target)
+        if match is not None:
+            self.patterns.append({'pattern': pattern, 'match': match.group()})
+            self.arrow_time = self.arrow_time.replace(month=12)
+            self._set_flag_datetime('month')
+
+
+    def _gen_day_fixed_time(self):
         """
         处理固定的日如 3日/号
         """
-        if self.__check_flag_datetime('day'):
+        if self._check_flag_any_datetime('day'):
             return
         rule = r"((?<!\d))([0-3][0-9]|[1-9])(?=(日|号))"
         pattern = re.compile(rule)
@@ -323,13 +381,13 @@ class ExtractDatetime:
         if match is not None:
             self.patterns.append({'pattern': pattern, 'match': match.group()})
             self.arrow_time = self.arrow_time.replace(day=int(match.group()))
-            self.__set_flag_datetime('day')
+            self._set_flag_datetime('day')
 
-    def __gen_hms_fixed_time(self):
+    def _gen_hms_fixed_time(self):
         """
         处理如： 晚上12:12:12 晚上12:12
         """
-        if self.__check_flag_datetime(['hour', 'minute', 'second']):
+        if self._check_flag_any_datetime(['hour', 'minute', 'second']):
             return
         rule = u"(晚上|夜间|夜里|今晚|明晚|晚|夜里|下午|午后)([0-2]?[0-9])点钟?[0-5]?[0-9]分[0-5]?[0-9]秒"
         pattern = re.compile(rule)
@@ -356,9 +414,9 @@ class ExtractDatetime:
             match = pattern.search(self.target)
             target = match.group()
             self.arrow_time = self.arrow_time.replace(second=int(target))
-            self.__set_flag_datetime(['hour', 'minute', 'second'])
+            self._set_flag_datetime(['hour', 'minute', 'second'])
 
-        if self.__check_flag_datetime(['hour', 'minute']):
+        if self._check_flag_any_datetime(['hour', 'minute']):
             return
         rule = u"(晚上|夜间|夜里|今晚|明晚|晚|夜里|下午|午后)([0-2]?[0-9])点钟?[0-5]?[0-9]分"
         pattern = re.compile(rule)
@@ -379,9 +437,9 @@ class ExtractDatetime:
             match = pattern.search(self.target)
             target = match.group()
             self.arrow_time = self.arrow_time.replace(minute=int(target))
-            self.__set_flag_datetime(['hour', 'minute'])
+            self._set_flag_datetime(['hour', 'minute'])
 
-        if self.__check_flag_datetime(['hour']):
+        if self._check_flag_any_datetime(['hour']):
             return
         rule = u"(晚上|夜间|夜里|今晚|明晚|晚|夜里|下午|午后)([0-2]?[0-9])点钟?"
         pattern = re.compile(rule)
@@ -396,9 +454,9 @@ class ExtractDatetime:
             if 0 <= int(target) <= 11:
                 target = int(target) + 12
             self.arrow_time = self.arrow_time.replace(hour=target)
-            self.__set_flag_datetime(['hour'])
+            self._set_flag_datetime(['hour'])
 
-        if self.__check_flag_datetime(['hour', 'minute', 'second']):
+        if self._check_flag_any_datetime(['hour', 'minute', 'second']):
             return
         rule = u"(晚上|夜间|夜里|今晚|明晚|晚|夜里|下午|午后)(?<!(周|星期))([0-2]?[0-9]):[0-5]?[0-9]:[0-5]?[0-9]"
         pattern = re.compile(rule)
@@ -415,9 +473,9 @@ class ExtractDatetime:
             self.arrow_time = self.arrow_time.replace(hour=tmp_parser[0])
             self.arrow_time = self.arrow_time.replace(minute=int(tmp_parser[1]))
             self.arrow_time = self.arrow_time.replace(second=int(tmp_parser[2]))
-            self.__set_flag_datetime(['hour', 'minute', 'second'])
+            self._set_flag_datetime(['hour', 'minute', 'second'])
 
-        if self.__check_flag_datetime(['hour', 'minute']):
+        if self._check_flag_any_datetime(['hour', 'minute']):
             return
         rule = u"(晚上|夜间|夜里|今晚|明晚|晚|夜里|下午|午后)(?<!(周|星期))([0-2]?[0-9]):[0-5]?[0-9]"
         pattern = re.compile(rule)
@@ -434,10 +492,10 @@ class ExtractDatetime:
             self.arrow_time = self.arrow_time.replace(hour=tmp_parser[0])
             self.arrow_time = self.arrow_time.replace(minute=int(tmp_parser[1]))
             self.arrow_time = self.arrow_time.replace(second=int(tmp_parser[2]))
-            self.__set_flag_datetime(['hour', 'minute'])
+            self._set_flag_datetime(['hour', 'minute'])
 
         # 处理如： 12:12:12 12:12
-        if self.__check_flag_datetime(['hour', 'minute', 'second']):
+        if self._check_flag_any_datetime(['hour', 'minute', 'second']):
             return
         rule = u"(?<!(周|星期|晚上|夜间|夜里|今晚|明晚|晚|夜里|下午|午后))([0-2]?[0-9]):[0-5]?[0-9]:[0-5]?[0-9]"
         pattern = re.compile(rule)
@@ -449,9 +507,9 @@ class ExtractDatetime:
             self.arrow_time = self.arrow_time.replace(hour=int(tmp_parser[0]))
             self.arrow_time = self.arrow_time.replace(minute=int(tmp_parser[1]))
             self.arrow_time = self.arrow_time.replace(second=int(tmp_parser[2]))
-            self.__set_flag_datetime(['hour', 'minute', 'second'])
+            self._set_flag_datetime(['hour', 'minute', 'second'])
 
-        if self.__check_flag_datetime(['hour', 'minute']):
+        if self._check_flag_any_datetime(['hour', 'minute']):
             return
         rule = u"(?<!(周|星期|晚上|夜间|夜里|今晚|明晚|晚|夜里|下午|午后))([0-2]?[0-9]):[0-5]?[0-9]"
         pattern = re.compile(rule)
@@ -462,15 +520,15 @@ class ExtractDatetime:
             tmp_parser = tmp_target.split(":")
             self.arrow_time = self.arrow_time.replace(hour=int(tmp_parser[0]))
             self.arrow_time = self.arrow_time.replace(minute=int(tmp_parser[1]))
-            self.__set_flag_datetime(['hour', 'minute'])
+            self._set_flag_datetime(['hour', 'minute'])
 
-    def __gen_hour_fixed_time(self):
+    def _gen_hour_fixed_time(self):
         """
         处理小时是固定的，如 12点  12时
         :param target:
         :return:
         """
-        if self.__check_flag_datetime('hour'):
+        if self._check_flag_any_datetime('hour'):
             return
         rule = r"(?<!(周|星期))([0-2]?[0-9])(?=(点钟?|时))"
         pattern = re.compile(rule)
@@ -478,7 +536,7 @@ class ExtractDatetime:
         if match is not None:
             self.patterns.append({'pattern': pattern, 'match': match.group()})
             self.arrow_time = self.arrow_time.replace(hour=int(match.group()))
-            self.__set_flag_datetime('hour')
+            self._set_flag_datetime('hour')
 
         # 周三12点
         rule = r"(?<=(周|星期)[1-7])([0-2]?[0-9])(?=(点钟?|时))"
@@ -487,11 +545,11 @@ class ExtractDatetime:
         if match is not None:
             self.patterns.append({'pattern': pattern, 'match': match.group()})
             self.arrow_time = self.arrow_time.replace(hour=int(match.group()))
-            self.__set_flag_datetime('hour')
+            self._set_flag_datetime('hour')
 
-    def __gen_minute_fixed_time(self):
+    def _gen_minute_fixed_time(self):
         # 10分    2点10分   排除 2小时10
-        if self.__check_flag_datetime('minute'):
+        if self._check_flag_any_datetime('minute'):
             return
         rule = r"([0-9]+(?=分(?!钟)))|((?<=((?<!小)[点时]))[0-5]?[0-9](?!刻))"
         pattern = re.compile(rule)
@@ -499,7 +557,7 @@ class ExtractDatetime:
         if match is not None:
             self.patterns.append({'pattern': pattern, 'match': match.group()})
             self.arrow_time = self.arrow_time.replace(minute=int(match.group()))
-            self.__set_flag_datetime('minute')
+            self._set_flag_datetime('minute')
 
         # 点 1刻
         rule = r"(?<=[点时])[1一]刻(?!钟)"
@@ -508,7 +566,7 @@ class ExtractDatetime:
         if match is not None:
             self.patterns.append({'pattern': pattern, 'match': match.group()})
             self.arrow_time = self.arrow_time.replace(minute=15)
-            self.__set_flag_datetime('minute')
+            self._set_flag_datetime('minute')
 
         # 点半
         rule = u"(?<=[点时])半"
@@ -517,7 +575,7 @@ class ExtractDatetime:
         if match is not None:
             self.patterns.append({'pattern': pattern, 'match': match.group()})
             self.arrow_time = self.arrow_time.replace(minute=30)
-            self.__set_flag_datetime('minute')
+            self._set_flag_datetime('minute')
 
         # 点三刻
         rule = u"(?<=[点时])[3三]刻(?!钟)"
@@ -526,10 +584,10 @@ class ExtractDatetime:
         if match is not None:
             self.patterns.append({'pattern': pattern, 'match': match.group()})
             self.arrow_time = self.arrow_time.replace(minute=45)
-            self.__set_flag_datetime('minute')
+            self._set_flag_datetime('minute')
 
-    def __gen_second_fixed_time(self):
-        if self.__check_flag_datetime('second'):
+    def _gen_second_fixed_time(self):
+        if self._check_flag_any_datetime('second'):
             return
         rule = r"([0-9]+(?=秒))|((?<=分)[0-5]?[0-9])"
         pattern = re.compile(rule)
@@ -537,40 +595,59 @@ class ExtractDatetime:
         if match is not None:
             self.patterns.append({'pattern': pattern, 'match': match.group()})
             self.arrow_time = self.arrow_time.replace(second=int(match.group()))
-            self.__set_flag_datetime('second')
+            self._set_flag_datetime('second')
 
-    def __correct_datetime(self):
-        if self.__check_flag_datetime('second'):
-            self.arrow_time.replace(second=0)
+    def _correct_datetime(self):
+        if self._check_flag_any_datetime('second'):
+            return
 
-        if self.__check_flag_datetime('minute'):
-            self.arrow_time.replace(minute=0)
+        if self._check_flag_any_datetime('minute'):
+            self.arrow_time = self.arrow_time.replace(second=0)
+            return
 
-        if self.__check_flag_datetime('hour'):
-            self.arrow_time.replace(hour=0)
+        if self._check_flag_any_datetime('hour'):
+            self.arrow_time = self.arrow_time.replace(second=0)
+            self.arrow_time = self.arrow_time.replace(minute=0)
+            return
 
-        if not self.__check_flag_datetime('day'):
+        if self._check_flag_any_datetime('day'):
+            self.arrow_time = self.arrow_time.replace(second=0)
+            self.arrow_time = self.arrow_time.replace(minute=0)
+            self.arrow_time = self.arrow_time.replace(hour=0)
+            return
+
+        if self._check_flag_any_datetime('month'):
+            self.arrow_time = self.arrow_time.replace(second=0)
+            self.arrow_time = self.arrow_time.replace(minute=0)
+            self.arrow_time = self.arrow_time.replace(hour=0)
             self.arrow_time = self.arrow_time.replace(day=1)
+            return
 
-        if not self.__check_flag_datetime('month'):
-            self.arrow_time.replace(month=1)
+        if not self._check_flag_any_datetime('year'):
+            self.arrow_time = self.arrow_time.replace(year=1970)
 
-        # if not self.__check_flag_datetime('year'):
-        #     self.arrow_time.replace(year=0)
+        self.arrow_time = self.arrow_time.replace(second=0)
+        self.arrow_time = self.arrow_time.replace(minute=0)
+        self.arrow_time = self.arrow_time.replace(hour=0)
+        self.arrow_time = self.arrow_time.replace(day=1)
+        self.arrow_time = self.arrow_time.replace(month=1)
+
 
     def generate_time(self):
-        self.__gen_ymd_fixed_time()
-        self.__gen_md_fixed_time()
-        self.__gen_ymd_relative_time()
-        self.__gen_ymd_fixed_relative_time()
-        self.__gen_year_fixed_time()
-        self.__gen_month_fixed_time()
-        self.__gen_day_fixed_time()
-        self.__gen_hms_fixed_time()
-        self.__gen_hour_fixed_time()
-        self.__gen_minute_fixed_time()
-        self.__gen_second_fixed_time()
-        # self.__correct_datetime()
+        self._gen_ymd_fixed_time()
+        self._gen_md_fixed_time()
+        self._gen_ymd_relative_time()
+        self._gen_ymd_fixed_relative_time()
+        self._gen_year_fixed_time()
+        self._gen_year_by_epoch()
+        self._gen_month_fixed_time()
+        self._gen_month_by_season()
+        self._gen_day_fixed_time()
+        self._gen_hms_fixed_time()
+        self._gen_hour_fixed_time()
+        self._gen_minute_fixed_time()
+        self._gen_second_fixed_time()
+        self._correct_datetime()
 
     def get_datetime(self):
         return self.arrow_time.format('YYYY-MM-DD HH:mm:ss')
@@ -634,34 +711,39 @@ class GenDatetime:
                 extrator = ExtractDatetime(dt_kw)
                 ele['value'] = extrator.get_datetime()
                 ele['pattern'] = extrator.get_patterns()
-                message_time_kws.extracts.append(ele)
+                if extrator.check_flag:
+                    message_time_kws.extracts.append(ele)
         return message_time_kws
 
 
 if __name__ == '__main__':
     test_samples = [
         '现在是几点',  # OK
-        '三年',
+        '50年代',
+        '1930年的夏天',
+        '元宵节是哪一天',
         '未来三天的天气预报',  # 三天
-        '现在是10点50分',    # OK
-        '六十秒之前',  # OK
-        '六十一秒以后',  # OK
-        '10秒钟过后',  # OK
-        '八分钟之前',    # OK
-        '一百分钟以前',   # OK
-        '3分钟之后',    # OK
-        '三天后是几号',   # OK
-        '三天前是几号',   # OK
-        '5天以后是几号',  # OK
-        '两小时之后是几点',  # OK
-        '一年之后',  # OK
-        '三十年过后',  # OK
-        '100年过后',   # OK
-        '后天上午八点',  # OK
-        '去年是哪年',  # OK
-        '明天下午三点',  # OK
-        '下午三点',  # OK
-        '现在是一月13日12点50分',  # OK
+        '10秒钟的时间',  # TODO
+        '三年',  # TODO
+        # '现在是10点50分',    # OK
+        # '六十秒之前',  # OK
+        # '六十一秒以后',  # OK
+        # '10秒钟过后',  # OK
+        # '八分钟之前',    # OK
+        # '一百分钟以前',   # OK
+        # '3分钟之后',    # OK
+        # '三天后是几号',   # OK
+        # '三天前是几号',   # OK
+        # '5天以后是几号',  # OK
+        # '两小时之后是几点',  # OK
+        # '一年之后',  # OK
+        # '三十年过后',  # OK
+        # '100年过后',   # OK
+        # '后天上午八点',  # OK
+        # '去年是哪年',  # OK
+        # '明天下午三点',  # OK
+        # '下午三点',  # OK
+        # '现在是一月13日12点50分',  # OK
     ]
     for sample in test_samples:
         message = ExtractNumeral.digitize(sample)
